@@ -47,7 +47,7 @@ release-check:
 release: release-check
 	gh release create \
 		v$(VERSION) \
-		build/ongc.$(VERSION).parquet \
+		build/*.parquet \
 		--title "v$(VERSION)" \
 		-R steveberardi/$(REPO_NAME)
 
