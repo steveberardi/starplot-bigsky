@@ -1,0 +1,2 @@
+starplot==0.18.0b2
+ruff
