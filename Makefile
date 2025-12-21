@@ -31,6 +31,7 @@ clean:
 
 build: venv/bin/activate
 	@mkdir -p build
+	@mkdir -p data
 	$(PYTHON) build.py
 
 # Releases ------------------------------------------
