@@ -31,7 +31,7 @@ clean:
 
 build: venv/bin/activate
 	rm -rf build
-	rm build.log
+	rm -f build.log
 	@mkdir -p build
 	@mkdir -p data
 	$(PYTHON) build.py
