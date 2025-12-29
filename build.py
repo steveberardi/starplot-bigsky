@@ -1,3 +1,5 @@
+import logging
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -7,7 +9,7 @@ from starplot import Star
 from starplot.data import Catalog, utils
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 HERE = Path(__file__).resolve().parent
 DATA_PATH = HERE / "data"
@@ -19,8 +21,22 @@ BIG_SKY_PQ_FILENAME = f"bigsky.{BIG_SKY_VERSION}.stars.parquet"
 
 BIG_SKY_DOWNLOAD_URL = f"https://github.com/steveberardi/bigsky/releases/download/v{BIG_SKY_VERSION}/{BIG_SKY_FILENAME}"
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+file_handler = logging.FileHandler("build.log", mode="a")
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+formatter = logging.Formatter(
+    "{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M",
+)
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
 
-def build_magnitude(limiting_magnitude: float = 16):
+
+def build_magnitude(limiting_magnitude: float):
     bigsky_path = DATA_PATH / BIG_SKY_FILENAME
 
     if not bigsky_path.is_file():
@@ -64,6 +80,7 @@ def build_magnitude(limiting_magnitude: float = 16):
     )
 
     def stars(d):
+        ctr = 0
         for star in d.itertuples():
             geometry = Point(star.ra, star.dec)
 
@@ -74,7 +91,9 @@ def build_magnitude(limiting_magnitude: float = 16):
             ):
                 continue
 
+            ctr += 1
             yield Star(
+                pk=ctr,
                 hip=star.hip,
                 tyc=star.tyc,
                 ra=star.ra,
@@ -90,11 +109,14 @@ def build_magnitude(limiting_magnitude: float = 16):
                 epoch_year=2000,
             )
 
+        logger.info(f"Magnitude {limiting_magnitude} total = {ctr:,}")
+
     Catalog.build(
         objects=stars(df),
         path=output_path,
         chunk_size=5_000_000,
         columns=[
+            "pk",
             "hip",
             "tyc",
             "ra",
@@ -110,29 +132,26 @@ def build_magnitude(limiting_magnitude: float = 16):
             "epoch_year",
         ],
         partition_columns=[],
-        sorting_columns=["magnitude"],
+        sorting_columns=["magnitude", "healpix_index"],
         compression="snappy",
         row_group_size=100_000,
+        healpix_nside=4,
     )
 
 
 def build():
+    time_start = time.time()
+    logger.info("Building Big Sky - Magnitude 16")
     build_magnitude(16)
+
+    logger.info("Building Big Sky - Magnitude 11")
     build_magnitude(11)
 
-    # ongc = Catalog(path=output_path)
+    logger.info("Building Big Sky - Magnitude 9")
+    build_magnitude(9)
 
-    # all_dsos = [d for d in DSO.all(catalog=ongc)]
-
-    # print(f"Total objects: {len(all_dsos)}")
-    # assert len(all_dsos) == 14_036
-
-    # m42 = DSO.get(m="42", catalog=ongc)
-    # assert m42.ngc == "1976"
-    # assert m42.ra == 83.8187
-    # assert m42.dec == -5.3897
-
-    # print("Checks passed!")
+    duration = time.time() - time_start
+    logger.info(f"Done - {duration:.0f}s")
 
 
 if __name__ == "__main__":
