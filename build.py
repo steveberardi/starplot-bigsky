@@ -30,7 +30,7 @@ logger.addHandler(file_handler)
 formatter = logging.Formatter(
     "{asctime} - {levelname} - {message}",
     style="{",
-    datefmt="%Y-%m-%d %H:%M",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 console_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
