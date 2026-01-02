@@ -9,7 +9,7 @@ from starplot import Star
 from starplot.data import Catalog, utils
 
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 HERE = Path(__file__).resolve().parent
 DATA_PATH = HERE / "data"
@@ -36,7 +36,7 @@ console_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
 
 
-def build_magnitude(limiting_magnitude: float):
+def build_magnitude(limiting_magnitude: float, expected_count: int):
     bigsky_path = DATA_PATH / BIG_SKY_FILENAME
 
     if not bigsky_path.is_file():
@@ -109,11 +109,9 @@ def build_magnitude(limiting_magnitude: float):
                 epoch_year=2000,
             )
 
-        logger.info(f"Magnitude {limiting_magnitude} total = {ctr:,}")
-
-    Catalog.build(
+    catalog = Catalog(path=output_path, healpix_nside=4)
+    catalog.build(
         objects=stars(df),
-        path=output_path,
         chunk_size=5_000_000,
         columns=[
             "pk",
@@ -135,20 +133,31 @@ def build_magnitude(limiting_magnitude: float):
         sorting_columns=["magnitude", "healpix_index"],
         compression="snappy",
         row_group_size=100_000,
-        healpix_nside=4,
     )
+
+    all_stars = [s for s in Star.all(catalog=catalog)]
+
+    logger.info(f"Magnitude {limiting_magnitude} total = {len(all_stars):,}")
+    assert len(all_stars) == expected_count
+
+    sirius = Star.get(name="Sirius", catalog=catalog)
+    assert sirius.magnitude == -1.44
+    assert sirius.hip == 32349
+    assert sirius.constellation_id == "cma"
 
 
 def build():
+    logger.info("Building Big Sky Catalogs...")
     time_start = time.time()
-    logger.info("Building Big Sky - Magnitude 16")
-    build_magnitude(16)
 
-    logger.info("Building Big Sky - Magnitude 11")
-    build_magnitude(11)
+    logger.info("Magnitude 16 - Building...")
+    build_magnitude(16, expected_count=2_557_500)
 
-    logger.info("Building Big Sky - Magnitude 9")
-    build_magnitude(9)
+    logger.info("Magnitude 11 - Building...")
+    build_magnitude(11, expected_count=983_822)
+
+    logger.info("Magnitude 9 - Building...")
+    build_magnitude(9, expected_count=136_125)
 
     duration = time.time() - time_start
     logger.info(f"Done - {duration:.0f}s")

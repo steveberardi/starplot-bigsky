@@ -10,6 +10,10 @@ VERSION_CHECK=$(shell gh release list \
 		--json tagName \
 		--jq '.[] | select(.tagName == "v$(VERSION)")' | wc -c)
 
+
+# Environment Variables ------------------------------------------
+export STARPLOT_DATA_PATH=./data/
+
 # Development ------------------------------------------
 install: venv/bin/activate
 
