@@ -15,7 +15,7 @@ HERE = Path(__file__).resolve().parent
 DATA_PATH = HERE / "data"
 BUILD_PATH = HERE / "build"
 
-BIG_SKY_VERSION = "0.4.0"
+BIG_SKY_VERSION = "0.4.1"
 BIG_SKY_FILENAME = f"bigsky.{BIG_SKY_VERSION}.stars.csv.gz"
 BIG_SKY_PQ_FILENAME = f"bigsky.{BIG_SKY_VERSION}.stars.parquet"
 
