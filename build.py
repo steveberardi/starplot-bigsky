@@ -9,7 +9,7 @@ from starplot import Star
 from starplot.data import Catalog, utils
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 HERE = Path(__file__).resolve().parent
 DATA_PATH = HERE / "data"
@@ -151,13 +151,13 @@ def build():
     time_start = time.time()
 
     logger.info("Magnitude 16 - Building...")
-    build_magnitude(16, expected_count=2_557_500)
+    build_magnitude(16, expected_count=2_557_501)
 
     logger.info("Magnitude 11 - Building...")
-    build_magnitude(11, expected_count=983_822)
+    build_magnitude(11, expected_count=983_823)
 
     logger.info("Magnitude 9 - Building...")
-    build_magnitude(9, expected_count=136_125)
+    build_magnitude(9, expected_count=136_126)
 
     duration = time.time() - time_start
     logger.info(f"Done - {duration:.0f}s")
